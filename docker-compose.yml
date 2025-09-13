@@ -1,0 +1,65 @@
+services:
+  backend:
+    build:
+      context: ./NHO-ORGANIZATION-BACKEND
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./NHO-ORGANIZATION-BACKEND:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_USER=nho
+      - DB_PASSWORD=nho123
+      - DB_DATABASE=nho_organization_db
+      - DB_PORT=5432
+      - CLOUDINARY_CLOUD_NAME=dn4qzttzn
+      - CLOUDINARY_API_KEY=411393464548883
+      - CLOUDINARY_API_SECRET=mw5Wggz7dDdmz8u8rWQFg3BjYIQ
+      - JWT_SECRET=8Jj+friXvx2/tCTbVJozsK3m2Jn+h1lGEEwM4Q77F/8=
+      - CLOUDINARY_UPLOAD_PRESET=nho_upload
+    depends_on:
+      - db
+    networks:
+      - nho-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://backend:5000
+    depends_on:
+      - backend
+    networks:
+      - nho-network
+
+  db:
+    image: postgres:17
+    restart: always
+    environment:
+      - POSTGRES_USER=nho
+      - POSTGRES_PASSWORD=nho123
+      - POSTGRES_DB=nho_organization_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - /c/Users/sopheak.lim/projects/PS/NHO-Organization/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - nho-network
+
+networks:
+  nho-network:
+    driver: bridge
+
+volumes:
+  pgdata:
